@@ -10,8 +10,23 @@ type CapturedResponse = {
   body: unknown;
 };
 
-function getRouteHandler(method: "get" | "post") {
-  const layer = router.stack.find(
+type RouteHandler = (
+  req: Request,
+  res: Response,
+  next: () => void
+) => unknown;
+
+type RouterLayer = {
+  route?: {
+    path: string;
+    methods: Record<string, boolean>;
+    stack: Array<{ handle: RouteHandler }>;
+  };
+};
+
+function getRouteHandler(method: "get" | "post"): RouteHandler {
+  const stack = (router as unknown as { stack: RouterLayer[] }).stack;
+  const layer = stack.find(
     (entry) => entry.route?.path === "/" && entry.route.methods[method]
   );
 
